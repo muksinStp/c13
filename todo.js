@@ -27,6 +27,19 @@ const listTasks = () => {
     });
 };
 
+// View a specific task by id
+const viewTask = (id) => {
+    const tasks = loadTasks();
+    const task = tasks.find(task => task.id === id);
+    if (task) {
+        const tags = task.tags ? ` [Tags: ${task.tags.join(', ')}]` : '';
+        console.log(`ID: ${task.id}\nStatus: [${task.completed ? 'X' : ' '}]`);
+        console.log(`Konten: ${task.content}${tags}`);
+    } else {
+        console.log(`Task dengan ID ${id} tidak ditemukan`);
+    }
+};
+
 // Add a new task
 const addTask = (content) => {
     const tasks = loadTasks();
@@ -65,7 +78,7 @@ const completeTask = (id) => {
         saveTasks(tasks);
         console.log(`"${task.content}" telah selesai`);
     } else {
-        console.log(`Task ${id} not found`);
+        console.log(`Task ${id} tidak ditemukan`);
     }
 };
 
@@ -78,7 +91,7 @@ const uncompleteTask = (id) => {
         saveTasks(tasks);
         console.log(`"${task.content}" status selesai dibatalkan`);
     } else {
-        console.log(`Task ${id} not found`);
+        console.log(`Task ${id} tidak ditemukan`);
     }
 };
 
@@ -89,18 +102,14 @@ const listTasksByStatus = (status, order) => {
 
     // Sort tasks by ID in ascending or descending order
     filteredTasks.sort((a, b) => {
-        if (order === 'asc') {
-            return a.id - b.id;
-        } else if (order === 'desc') {
-            return b.id - a.id;
-        }
+        return order === 'asc' ? a.id - b.id : b.id - a.id;
     });
 
     // Display the filtered and sorted tasks
     console.log(`Daftar Pekerjaan`);
-    filteredTasks.forEach((task, index) => {
+    filteredTasks.forEach((task) => {
         const tags = task.tags ? ` [Tags: ${task.tags.join(', ')}]` : '';
-        console.log(`${index + 1}. [${task.completed ? 'X' : ' '}] ${task.content}`);
+        console.log(`${task.id}. [${task.completed ? 'X' : ' '}] ${task.content}`);
     });
 };
 
@@ -124,9 +133,9 @@ const filterTasksByTag = (tag) => {
 
     console.log(`Daftar Pekerjaan`);
     if (filteredTasks.length > 0) {
-        filteredTasks.forEach((task, index) => {
+        filteredTasks.forEach((task) => {
             const tags = task.tags ? ` [Tags: ${task.tags.join(', ')}]` : '';
-            console.log(`${index + 1}. [${task.completed ? 'X' : ' '}] ${task.content}`);
+            console.log(`${task.id}. [${task.completed ? 'X' : ' '}] ${task.content}`);
         });
     } else {
         console.log(`Tidak ada tugas dengan tag '${tag}'`);
@@ -136,10 +145,9 @@ const filterTasksByTag = (tag) => {
 // Main function to parse command line arguments
 const main = () => {
     const command = process.argv[2];
-    console.log(command);
     const args = process.argv.slice(3);
 
-    if (command.startsWith('filter:')) {
+    if (command?.startsWith('filter:')) {
         const tag = command.split(':')[1];
         filterTasksByTag(tag);
         return;
@@ -148,6 +156,9 @@ const main = () => {
     switch (command) {
         case 'list':
             listTasks();
+            break;
+        case 'task':
+            viewTask(parseInt(args[0]));
             break;
         case 'add':
             addTask(args.join(' '));
@@ -162,10 +173,10 @@ const main = () => {
             uncompleteTask(parseInt(args[0]));
             break;
         case 'list:outstanding':
-            listTasksByStatus(false, args[0]); // false untuk tugas yang belum selesai
+            listTasksByStatus(false, args[0]);
             break;
         case 'list:completed':
-            listTasksByStatus(true, args[0]); // true untuk tugas yang sudah selesai
+            listTasksByStatus(true, args[0]);
             break;
         case 'tag':
             const id = parseInt(args[0]);
@@ -176,6 +187,7 @@ const main = () => {
             console.log(">>> JS TODO <<<");
             console.log("$ node todo.js <command>");
             console.log("$ node todo.js list");
+            console.log("$ node todo.js task <task_id>");
             console.log("$ node todo.js add <task_content>");
             console.log("$ node todo.js delete <task_id>");
             console.log("$ node todo.js complete <task_id>");
